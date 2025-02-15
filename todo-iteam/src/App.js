@@ -1,48 +1,96 @@
-
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Form from './components/Form';
-import Todo from "./components/Todos"
-import {useDispatch, useSelector} from 'react-redux';
-import { deleteAll } from './redux/todoapp/actions';
+import Todos from "./components/Todos";
 
 function App() {
-  const dispatch = useDispatch();
-  
-  const todos = useSelector((state)=>state.operationsReducer);
-   
-    const [editFormVisibility, setEditFormVisibility]=useState(false);
+  const defaultTodos = [
+    { id: 1, todo: "Buy groceries", completed: false },
+    { id: 2, todo: "Read a book", completed: true },
+    { id: 3, todo: "Go for a walk", completed: false }
+  ];
 
+  const [todos, setTodos] = useState(() => {
+    // ✅ Load from localStorage OR set default todos if empty
+    const savedTodos = JSON.parse(localStorage.getItem('todos'));
+    return savedTodos && savedTodos.length > 0 ? savedTodos : defaultTodos;
+  });
 
-    const [editTodo, setEditTodo]=useState('');
-  
-   
-    const handleEditClick=(todo)=>{
-      setEditFormVisibility(true);
-      setEditTodo(todo);
-    }
-  
-    // back button click
-    const cancelUpdate=()=>{
-      setEditFormVisibility(false);
-    }
-  
+  const [editFormVisibility, setEditFormVisibility] = useState(false);
+  const [editTodo, setEditTodo] = useState(null);
+
+  // ✅ Save todos to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos));
+  }, [todos]);
+
+  // ✅ Add a new todo
+  const addTodo = (todo) => {
+    setTodos([...todos, todo]);
+  };
+
+  // ✅ Remove a single todo
+  const removeTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
+  };
+
+  // ✅ Delete all todos
+  const deleteAll = () => {
+    setTodos([]);
+  };
+
+  // ✅ Toggle completed status
+  const toggleTodo = (id) => {
+    setTodos(todos.map(todo => 
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  // ✅ Open the edit form
+  const handleEditClick = (todo) => {
+    setEditFormVisibility(true);
+    setEditTodo(todo);
+  };
+
+  // ✅ Submit edited todo
+  const handleEditSubmit = (updatedTodo) => {
+    setTodos(todos.map(todo => 
+      todo.id === updatedTodo.id ? updatedTodo : todo
+    ));
+    cancelUpdate();
+  };
+
+  // ✅ Cancel edit mode
+  const cancelUpdate = () => {
+    setEditFormVisibility(false);
+    setEditTodo(null);
+  };
+
   return (
-    <div className="vh-100 gradient-custom  " >
-      <div className="wrapper  container py-5 h-100">
-    <br></br>
-    <h1 className="text-center fort-weight-bold ">TODO-List</h1>
-    <Form editFormVisibility={editFormVisibility} editTodo={editTodo}   cancelUpdate={cancelUpdate}/>
-    <Todo handleEditClick={handleEditClick} editFormVisibility={editFormVisibility}/>
-    {todos.length > 0&&(
-        <button className='btn btn-danger btn-md delete-all my-7'
-        onClick={()=>dispatch(deleteAll())}>DELETE ALL</button>
-      )}
-
-  
-  </div>
+    <div className="vh-100 gradient-custom text-black">
+      <div className="wrapper container py-5 h-100 position-relative">
+        <h1 className="text-center font-weight-bold">Todo-list</h1>
+        <Form 
+          addTodo={addTodo} 
+          editFormVisibility={editFormVisibility} 
+          editTodo={editTodo} 
+          handleEditSubmit={handleEditSubmit} 
+          cancelUpdate={cancelUpdate} 
+        />
+        <Todos 
+          todos={todos} 
+          removeTodo={removeTodo} 
+          toggleTodo={toggleTodo} 
+          handleEditClick={handleEditClick} 
+          editFormVisibility={editFormVisibility} 
+        />
+        {todos.length > 0 && (
+          <button className='btn btn-danger btn-md delete-all my-4' onClick={deleteAll}>
+            DELETE ALL
+          </button>
+        )}
+      </div>
     </div>
-    
   );
 }
 

@@ -1,34 +1,44 @@
-import React from 'react'
-import { useSelector ,useDispatch} from 'react-redux';
-import { Icon } from 'react-icons-kit';
-import {trash} from 'react-icons-kit/feather/trash'
-import {edit2} from 'react-icons-kit/feather/edit2'
-import { removeTodo , handleCheckbox} from '../redux/todoapp/actions';
+import React from 'react';
+import { FaPen } from "react-icons/fa6";
+import { MdDelete } from "react-icons/md";
 
-const Todos = ({handleEditClick, editFormVisibility}) => {
-  const dispatch = useDispatch();
-  const todos = useSelector((state)=>state.operationsReducer);
-  return todos.map((todo)=>(
-    <div key={todo.id} className='todo-box backgroud'>
-        <div className='content'>
-            {editFormVisibility===false&&(
-              <input type="checkbox" checked={todo.completed}
-              onChange={()=>dispatch(handleCheckbox(todo.id))} ></input>
-            )}
-            <p style={todo.completed===true?{textDecoration:'line-through'}:{textDecoration:'none'}}>
+const Todos = ({ todos, removeTodo, toggleTodo, handleEditClick, editFormVisibility }) => {
+  return (
+    <div className="todos-container">
+      {todos.length > 0 ? (
+        todos.map((todo) => (
+          <div key={todo.id} className='todo-box background'>
+            <div className='content d-flex flex-row align-items-center gap-2 mb-3'>
+              {!editFormVisibility && (
+                <input
+                  type="checkbox"
+                  checked={todo.completed}
+                  onChange={() => toggleTodo(todo.id)}
+                />
+              )}
+              <p className='m-0' style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>
                 {todo.todo}
-            </p>
-        </div>
-        <div className='actions-box'>
-              {editFormVisibility===false&&(
+              </p>
+            </div>
+            <div className='actions-box'>
+              {!editFormVisibility && (
                 <>
-                  <span onClick={()=>handleEditClick(todo)}><Icon icon={edit2}/></span>
-                  <span onClick={()=>dispatch(removeTodo(todo.id))}><Icon icon={trash}/></span>
+                  <span onClick={() => handleEditClick(todo)}>
+                    <FaPen className='text-primary fw-bold' />
+                  </span>
+                  <span onClick={() => removeTodo(todo.id)}>
+                    <MdDelete size={24} className='text-danger fw-bold' />
+                  </span>
                 </>
               )}
-        </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p className="text-center mt-3">No todos available</p>
+      )}
     </div>
-  ))
-}
+  );
+};
 
-export default Todos
+export default Todos;
